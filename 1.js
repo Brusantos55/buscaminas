@@ -1,13 +1,18 @@
-console.log("js abierto");
-debugger;
+class Buscaminas {
+    constructor(rows, columns) {
+        this.rows = rows;
+        this.columns = columns;
+    }
 
-let bc = {
-    rows: 10,
-    columns: 10,
-    alalala: function() {
-        console.log("funcion abierta");
+    init() {
+        this.fillBoard();
+        this.addMines();
+    }
+
+    fillBoard() {
         let board = document.querySelector("#buscaminas");
-        for(let r=0;r<bc.rows;r++){
+        
+        for (let r=0;r<bc.rows;r++){
             let row = document.createElement("div");
             board.appendChild(row);
             for(let c=0;c<bc.columns;c++){
@@ -15,9 +20,11 @@ let bc = {
                 row.appendChild(column);
             }
         }
-    }    
-};
+    }
 
-bc.alalala();
+    addMines() {
+        // TODO Add mines in random places to board
+    }
+}
 
-console.log('fin');
+Buscaminas.init(10, 10);
