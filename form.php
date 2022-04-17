@@ -32,4 +32,4 @@ $_SESSION['name']=$name;
 $_SESSION['email']=$email;
 
 //dar respuesta
-header('Location: localhost/buscaminas/play.html');
+header('Location: play.html');
