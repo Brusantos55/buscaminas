@@ -22,7 +22,7 @@ class Buscaminas {
      * Creates a matrix of divs and fills the board container with them
      */
     fillBoard() {
-        
+
         for (var row = 0; row < this.columns; row++) {
             this.map[row] = document.createElement('div');
             this.board.appendChild(this.map[row]);
@@ -33,6 +33,7 @@ class Buscaminas {
                 this.map[row][col].row = row;
                 this.map[row][col].col = col;
                 this.map[row][col].mine = false;
+                this.map[row][col].painted = false;
 
                 // TODO this should be removed from here,
                 // and be called recursively in this.init() until all the mines set in this.mines_number property
@@ -42,115 +43,54 @@ class Buscaminas {
         }
     }
 
+    checkWin() {
+        for (var row = 0; row < this.columns; row++) {
+            for (var col = 0; col < this.rows; col++) {
+                if (this.map[row][col].painted == false && this.map[row][col].mine == false) {
+                    console.log(this.map[row][col])
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
     /**
      * Random chance of setting a mine in a square based on the amount of mines we have. 
      * @param {Object} square DOM div element 
      * @returns 
      */
     addMine(square) {
-    
+
         if (this.mines_to_set == 0) {
             return
         }
 
         if (Math.floor(Math.random() * (this.mines_number - 1)) + 1 === 1) {
             square.mine = true;
-            console.log("mina"+square.row+square.col);
-            this.paintMines(square);
+            console.log("mina" + square.row + square.col);
             this.mines_to_set--;
-        }   
+            //this.paintMines(square);
+        }
     }
 
     /**
-     * Counts the amount of mines which are sorrouding the square we are clicking and draws the number
-     * in the current square.
+     * Counts the amount of mines which are sorrouding the square we are clicking 
+     * and draws the number in the current square.
      * It keeps being called recursively for every square which has no mines
      * @param {Object} square DOM div element 
      */
     countCloseMines(square) {
-        let closeSquares = new Map() 
-
-        if (square.row==0 && square.col==0) {
-            // up_left corner
-            closeSquares.set("center_rigth", this.map[square.row][square.col + 1])
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1])
-        }
-
-        if (square.row==this.rows-1 && square.col==this.columns-1){
-            // down_rigth corner
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1])
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-        }
-
-        if (square.row==this.rows-1 && square.col==0) {
-            // down_left corner
-            closeSquares.set("center_rigth", this.map[square.row][square.col +1])
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1])
-        }
-
-        if (square.row==0 && square.col==this.columns-1) {
-            // up_rigth corner
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1])
-        }
-
-        if (square.row==0 && square.col<this.columns-1 && square.col>0) {
-            // mid_up row
-            closeSquares.set("center_rigth", this.map[square.row][square.col + 1])
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1])
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1])
-        }
-
-        if (square.row==this.rows-1 && square.col<this.columns-1 && square.col>0) {
-            // mid_down row
-            closeSquares.set("center_rigth", this.map[square.row][square.col + 1])
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1])
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1])
-        }
-
-        if (square.col==0 && square.row<this.rows-1 && square.row>0) {
-            // mid_left col
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1])
-            closeSquares.set("center_rigth", this.map[square.row][square.col +1])
-            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1])
-        }
-
-        if (square.col==this.columns-1 && square.row<this.rows-1 && square.row>0) {
-            // mid_rigth col
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1])
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1])
-        }
-
-        if (square.col<this.columns-1 && square.col>0 && square.row<this.rows-1 && square.row>0) {
-            // inner squares
-            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1])
-            closeSquares.set("up_center", this.map[square.row - 1][square.col])
-            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1])
-            closeSquares.set("center_rigth", this.map[square.row][square.col + 1])
-            closeSquares.set("center_left", this.map[square.row][square.col - 1])
-            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1])
-            closeSquares.set("down_center", this.map[square.row + 1][square.col])
-            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1])
+        if (square.painted) {
+            return
         }
 
         let nMines = 0;
-        
+        let closeSquares = this.createCloseSquareMap(square);
+
         for (let [key, square] of closeSquares) {
-            console.log(square);
-            if (square.mine==true){
+            //console.log(square);
+            if (square.mine == true) {
                 nMines++
             }
         }
@@ -159,17 +99,111 @@ class Buscaminas {
 
         this.squareDraw(square);
 
-        // TODO fix the bug that creates the infinite loop.
-        // probably it is because we have two squares with 0 mines next to each other
-        // so they get infinitely added to each others closeSquares Map.
-        // It may be fixed by passing the previous square as a second param in this function
-        // and skipping that square in the for loop below
+        if (square.nMines == 0) {
+            //debugger;
+            for (let [key, closeSquare] of closeSquares) {
+                if (closeSquare.painted) {
+                    continue
+                }
+                if (this.isDiagonal(square, closeSquare) && closeSquares.nMines == 0) {
+                    continue
+                }
+                this.countCloseMines(closeSquare);
+            }
+        }
+    }
 
-        // if (square.nMines==0){
-        //     for (const iterator of mines) {
-        //         this.countCloseMines(iterator);
-        //     }
-        // } 
+    /**
+     * create a map with the close squares of each square
+     * @returns Map closeSquares
+     */
+    createCloseSquareMap(square) {
+        let closeSquares = new Map();
+
+        if (square.row == 0 && square.col == 0) {
+            // up_left corner
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1]);
+        }
+
+        if (square.row == this.rows - 1 && square.col == this.columns - 1) {
+            // down_rigth corner
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1]);
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+        }
+
+        if (square.row == this.rows - 1 && square.col == 0) {
+            // down_left corner
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1]);
+        }
+
+        if (square.row == 0 && square.col == this.columns - 1) {
+            // up_rigth corner
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1]);
+        }
+
+        if (square.row == 0 && square.col < this.columns - 1 && square.col > 0) {
+            // mid_up row
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1]);
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1]);
+        }
+
+        if (square.row == this.rows - 1 && square.col < this.columns - 1 && square.col > 0) {
+            // mid_down row
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1]);
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1]);
+        }
+
+        if (square.col == 0 && square.row < this.rows - 1 && square.row > 0) {
+            // mid_left col
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1]);
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1]);
+        }
+
+        if (square.col == this.columns - 1 && square.row < this.rows - 1 && square.row > 0) {
+            // mid_rigth col
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1]);
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1]);
+        }
+
+        if (square.col < this.columns - 1 && square.col > 0 && square.row < this.rows - 1 && square.row > 0) {
+            // inner squares
+            closeSquares.set("up_left", this.map[square.row - 1][square.col - 1]);
+            closeSquares.set("up_center", this.map[square.row - 1][square.col]);
+            closeSquares.set("up_rigth", this.map[square.row - 1][square.col + 1]);
+            closeSquares.set("center_rigth", this.map[square.row][square.col + 1]);
+            closeSquares.set("center_left", this.map[square.row][square.col - 1]);
+            closeSquares.set("down_left", this.map[square.row + 1][square.col - 1]);
+            closeSquares.set("down_center", this.map[square.row + 1][square.col]);
+            closeSquares.set("down_rigth", this.map[square.row + 1][square.col + 1]);
+        }
+        return closeSquares;
+    }
+
+
+    isDiagonal(square1, square2) {
+        if (square1.row != square2.row && square1.col != square2.col) {
+            return true
+        }
+        return false
     }
 
     /**
@@ -178,15 +212,15 @@ class Buscaminas {
      */
     squareDraw(square) {
         //if (square.nMines==0){
-        square.innerHTML = square.nMines; 
+        square.innerHTML = square.nMines;
+        square.painted = true;
     }
 
     /**
      * JUST FOR DEBUGGING. TO BE REMOVED
      */
-    paintMines(square)
-    {
-        square.style.backgroundColor="red";
+    paintMines(square) {
+        square.style.backgroundColor = "red";
     }
 
     /**
@@ -198,6 +232,13 @@ class Buscaminas {
         this.board.style.width = this.columns * 22 + "px";
     }
 
+    win() {
+        alert("u´ve won");
+    }
+    lose() {
+        alert("u´ve lost");
+    }
+
     /**
      * Adds all the event listeners to the squares in the board to capture
      * the player's interactions
@@ -207,14 +248,23 @@ class Buscaminas {
         for (var x = 0; x < this.columns; x++) {
             for (var y = 0; y < this.rows; y++) {
                 const square = this.map[x][y];
-                square.addEventListener("click", () => {
-                    console.log("play");
-                    if (square.mine) {
-                        this.paintMines(square);
-                        //this.lost();
-                    } else {
-                        this.countCloseMines(square);
+
+                square.addEventListener("mousedown", (e) => {
+                    if (e.which == 1) {
+                        if (square.mine) {
+                            square.innerHTML = "*";
+                            this.lose();
+                        } else {
+                            this.countCloseMines(square);
+                            if (this.checkWin(square)) {
+                                this.win();
+                            }
+                        }
                     }
+                    if (e.which == 3) {
+                        this.paintMines(square);
+                    }
+
                 });
             }
         }

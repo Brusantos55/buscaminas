@@ -1,29 +1,23 @@
 <?php
-//conectar base de datos
-$host = 'localhost';
-$db = 'buscaminas';
-$user = 'root';
-$password = '';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=UTF8";
+include_once "DatabaseSingleton.php";
+include_once "UserRepository.php";
+include_once "User.php";
 
-$pdo = new PDO($dsn, $user, $password);
- 
+$db = new DatabaseSingleton();
+$pdo = $db->pdo;
+
+$user = new User();
+
 
 //extraer datos print_r($_POST);
-$name=$_POST['name'];
-$username=$_POST['username'];
-$password=$_POST['password'];
-$email=$_POST['email'];
-//TODO validaciones
+$user->setName($_POST['name']);  
+$user->setUsername($_POST['username']);  
+$user->setPassword($_POST['password']);
+$user->setEmail($_POST['email']);
 
-
-//crear usuario
-$sql = 'INSERT INTO users (name,username,email,password)
-        VALUES(:name,:username,:email,:password);';
-
-$sth = $pdo->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
-$sth->execute(array(':name'=>$name, ':username'=>$username,':email'=>$email,':password'=>$password));
+$userRepository = new UserRepository($db, $user);
+$userRepository->createUser();
 
 //inicio sesion
 session_start();
